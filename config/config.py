@@ -9,8 +9,6 @@ class CFG():
     weights_dir='./weights/'
 
     caffe_model="./models/vgg16_caffe_pretrain.pth"
-    use_caffe=True
-    use_caffe_classifier=True
     
     # loc_mean=[.0,.0,.0,.0]
     # loc_std=[1.,1.,2.,2.]
