@@ -75,7 +75,16 @@ class SSD(torch.nn.Module):
 
         self.conv_loc_layers=torch.nn.Sequential(*conv_loc_layers)
         self.conv_cls_layers=torch.nn.Sequential(*conv_cls_layers)
-    
+        
+        # use xavier to initialize the newly added layer...
+        for k,v in torch.nn.Sequential(*[
+            self.conv8,self.conv9,self.conv10,self.conv11,
+            self.conv_loc_layers,self.conv_cls_layers
+        ]).named_parameters():
+            if 'bias' in k:
+                torch.nn.init.normal_(v.data)
+            else:
+                torch.nn.init.xavier_normal_(v.data)
         
 
     def _print(self):
