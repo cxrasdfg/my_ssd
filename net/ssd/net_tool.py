@@ -220,3 +220,61 @@ def t_box_iou(A,B):
     ious=union/(AreaA+AreaB-union)
 
     return ious
+
+
+def get_default_boxes(smin=cfg.smin,smax=cfg.smax,
+                      ars=cfg.ar,im_size=cfg.intput_wh,
+                      feat_map=cfg.feat_map,
+                      steps=cfg.steps):
+    r"""
+    """
+    # smax and smin is percent...
+    smin*=im_size
+    smax*=im_size
+    step=(smax-smin)//(len(ars)-2)
+
+    # scale k, a little different from the paper....
+    sk=[.1*im_size]+[smin+_*step for _ in range(len(ars)) ] # [7], 0-6 for the detector layer 0-6
+    
+    default_boxes=[]
+    for i,(f,ar,step) in enumerate(zip(feat_map,ars,steps)):
+        s=sk[i]
+
+        x_axis=torch.linspace(0,f-1,f)+.5
+        x_axis=x_axis*step
+        y_axis=x_axis.clone()
+        x_axis,y_axis=t_meshgrid_2d(x_axis,y_axis) # [h,w]
+
+        xy=torch.cat([x_axis[None],y_axis[None]],dim=0) # [2,h,w]
+
+        # prepare ar
+        ar=torch.tensor(ar).float().sqrt() # [3]
+        ar=torch.cat([ar,1./ar]) # [6]
+        ar=ar[:,None] # [6,1]
+        ar=torch.cat([ar,ar],dim=1) # [6,2]
+        ar[:,1]=1./ar[:,1]
+
+        wh=s*ar # [6,2] 
+        wh[0]=(torch.tensor(s)*torch.tensor(sk[i+1])).sqrt() # [bnum,2] 有两个aspect_ratio=1的，这里直接改第一个
+        
+        # for: [bnum,4,h,w] -> [bnum*4,h,w]=[c,h,w]
+        wh=wh[...,None,None] # [bnum,2,1,1]        
+        wh=wh.expand(-1,-1,f,f) # [bnum,2,h,w]
+
+        xy=xy[None].expand_as(wh) # [bnum,2,h,w]
+        
+        xywh=torch.cat([xy,wh],dim=1) # [bnum,4,h,w]
+
+        # transpose
+        xywh=xywh.permute(0,2,3,1).contiguous() # [bnum,h,w,4]
+
+        xywh=xywh.view(-1,4) # [bnum*h*w,4]
+
+        # change to `xyxy`
+        xywh=ccwh2xyxy(xywh)
+
+        default_boxes.append(xywh)
+    
+    default_boxes=torch.cat(default_boxes,dim=0)
+
+    return default_boxes

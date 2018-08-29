@@ -15,8 +15,7 @@ class CFG():
 
     use_batchnorm=False
 
-    intput_w=300
-    input_h=300
+    intput_wh=300
 
     smin=.2
     smax=.9
@@ -24,8 +23,9 @@ class CFG():
     # aspect ratio
     ar=[[1,2],[1,2,3],[1,2,3],[1,2,3],[1,2],[1,2]]
     # about the net
-    feat_map=[[38,38],[19,19],[10,10],[5,5],[3,3],[1,1]] # h,w
+    feat_map=[38,19,10,5,3,1] # h equals to w
     det_in_channels=[512,1024,512,256,256,256]
+    steps = [8, 16, 32, 64, 100, 300]
 
     l2norm_scale=20
 
