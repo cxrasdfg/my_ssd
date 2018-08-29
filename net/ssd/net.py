@@ -4,6 +4,7 @@ import numpy as np
 from config import cfg
 
 from .vgg16_caffe import caffe_vgg16 as vgg16
+from net_tool import get_default_boxes
 
 class ConvBN2d(torch.nn.Module):
     def __init__(self,in_,out_,size_,pad_,stride_,bn_,relu_=True):
@@ -86,6 +87,11 @@ class SSD(torch.nn.Module):
             else:
                 torch.nn.init.xavier_normal_(v.data)
         
+        # get default boxes
+        self.default_boxes=get_default_boxes()
+
+        self.get_optimizer()
+
     def forward(self,x):
         x_4=self.conv4(x)
 
@@ -113,6 +119,19 @@ class SSD(torch.nn.Module):
         
         return res
 
+    def train_once(self,imgs,target_,labels):
+        r"""Train once
+        Args:
+            imgs (tensor[float32]): [b,c,h,w]
+            target_ (tensor[float32]): [b,tbnum,4]
+            labels (tensor[long]): [b,tbnum], idx 0 is the negative sample
+        Return:
+            loss (float)
+        """
+        
+
+    def get_optimizer(self):
+        raise NotImplementedError("")
 
     def _print(self):
         print('********\t NET STRUCTURE \t********')

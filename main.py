@@ -17,6 +17,9 @@ def main():
     cfg._print()
     # net=SSD(21)
     # net._print()
+    # im=torch.randn([1,3,300,300])
+    # for loc,cls in net(im):
+        # print(loc.shape,cls.shape)
     # for k,v in net.named_parameters():
     #     print(k,v,v.shape)
 
