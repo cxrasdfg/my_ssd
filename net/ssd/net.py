@@ -86,6 +86,33 @@ class SSD(torch.nn.Module):
             else:
                 torch.nn.init.xavier_normal_(v.data)
         
+    def forward(self,x):
+        x_4=self.conv4(x)
+
+        # x_5 and x_6 is not for prediction
+        x_5=self.conv5(x_4)
+        x_6=self.conv6(x_5)
+
+        x_7=self.conv7(x_6)
+        x_8=self.conv8(x_7)
+        x_9=self.conv9(x_8)
+        x_10=self.conv10(x_9)
+        x_11=self.conv11(x_10)
+
+        res=[]
+        for x_,loc_l,cls_l in \
+            zip(
+                (x_4,x_7,x_8,x_9,x_10,x_11),
+                self.conv_loc_layers,
+                self.conv_cls_layers
+            ):
+            loc_out= loc_l(x_)
+            cls_out=cls_l(x_)
+
+            res.append((loc_out,cls_out))
+        
+        return res
+
 
     def _print(self):
         print('********\t NET STRUCTURE \t********')
