@@ -3,6 +3,7 @@
 import torch
 from torch.autograd import Variable
 from config import cfg
+import numpy as np
 
 def encode_box(real_boxes,anchor_boxes):
     """Encode the real_box to the corresponding parameterized coordinates
@@ -278,3 +279,32 @@ def get_default_boxes(smin=cfg.smin,smax=cfg.smax,
     default_boxes=torch.cat(default_boxes,dim=0)
 
     return default_boxes
+
+default_boxes=get_default_boxes()
+
+
+def calc_target_(gt_boxes,gt_labels,pos_thresh=cfg.pos_thresh):
+    r"""Calculate the net target...
+    Args:
+        gt_boxes (np.ndarray[int32]): [n,4]
+        gt_labels (np.ndarray[int32]): [n]
+    Return 
+        target_ (torch.tensor[float32]): [b_num,4], b_num is the number of the default boxes
+        labels_(torch.tensor[long]): [b_num], indicates the class of the positive anchors(default box) and negative samples 
+    """
+    # type check...
+    if isinstance(gt_boxes,np.ndarray):
+        gt_boxes=torch.tensor(gt_boxes).float()
+    elif not isinstance(gt_boxes,torch.Tensor):
+        raise ValueError()
+    if isinstance(gt_labels,np.ndarray):
+        gt_labels=torch.tensor(gt_labels)
+    elif not isinstance(gt_labels,torch.Tensor):
+        raise ValueError()
+
+    ious=t_box_iou(default_boxes,gt_boxes) # [a_num,n]
+
+    # first, find the highest ious between deafult boxes and ground truth...
+    temp_ious=ious.clone()
+    while 1:
+       _,dix= temp_ious.max() # 

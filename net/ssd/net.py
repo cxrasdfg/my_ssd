@@ -4,7 +4,7 @@ import numpy as np
 from config import cfg
 
 from .vgg16_caffe import caffe_vgg16 as vgg16
-from net_tool import get_default_boxes
+from net_tool import default_boxes
 
 class ConvBN2d(torch.nn.Module):
     def __init__(self,in_,out_,size_,pad_,stride_,bn_,relu_=True):
@@ -88,7 +88,7 @@ class SSD(torch.nn.Module):
                 torch.nn.init.xavier_normal_(v.data)
         
         # get default boxes
-        self.default_boxes=get_default_boxes()
+        self.default_boxes=default_boxes
 
         self.get_optimizer()
 
