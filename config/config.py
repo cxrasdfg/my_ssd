@@ -21,6 +21,12 @@ class CFG():
     smin=.2
     smax=.9
 
+    # aspect ratio
+    ar=[[1,2],[1,2,3],[1,2,3],[1,2,3],[1,2],[1,2]]
+    # about the net
+    feat_map=[[38,38],[19,19],[10,10],[5,5],[3,3],[1,1]] # h,w
+    det_in_channels=[512,1024,512,256,256,256]
+
     l2norm_scale=20
 
     rand_seed=0

@@ -11,7 +11,7 @@ class L2Norm(torch.nn.Module):
         self.weights=torch.nn.Parameter(torch.Tensor(channels)) # [c]
         
         # use scale_ to initialize the weight, default scale_ is 20...
-        torch.nn.init.constant(self.weights.data,scale_)
+        torch.nn.init.constant_(self.weights.data,scale_)
 
     
     def forward(self,x):
