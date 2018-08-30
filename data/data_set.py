@@ -20,6 +20,7 @@ name_list=voc_utils.voc_bbox_label_names
 def caffe_normalize(img):
     img = img[[2, 1, 0], :, :]  # RGB-BGR
     mean = np.array([122.7717, 115.9465, 102.9801]).reshape(3, 1, 1)
+    # NOTE: check the range...
     assert img.max()>1.0
     img=img*255.0  
     img = (img - mean).astype(np.float32, copy=True)

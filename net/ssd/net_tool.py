@@ -295,11 +295,11 @@ def calc_target_(gt_boxes,gt_labels,pos_thresh=cfg.pos_thresh):
     """
     # type check...
     if isinstance(gt_boxes,np.ndarray):
-        gt_boxes=torch.tensor(gt_boxes).float()
+        gt_boxes=torch.tensor(gt_boxes).type_as(default_boxes)
     elif not isinstance(gt_boxes,torch.Tensor):
         raise ValueError()
     if isinstance(gt_labels,np.ndarray):
-        gt_labels=torch.tensor(gt_labels)
+        gt_labels=torch.tensor(gt_labels).type_as(default_boxes).long()
     elif not isinstance(gt_labels,torch.Tensor):
         raise ValueError()
 
@@ -317,7 +317,7 @@ def calc_target_(gt_boxes,gt_labels,pos_thresh=cfg.pos_thresh):
         if miou<1e-10:
             break
 
-        r_,c_=np.unravel_index(idx)
+        r_,c_=np.unravel_index(idx,miou.shape)
         
         # NOTE: Attention, we have already plused one...
         final_labels[r_]=gt_labels[c_]+1 
