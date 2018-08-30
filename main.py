@@ -12,6 +12,9 @@ torch.cuda.manual_seed(cfg.rand_seed)
 
 from net import SSD
 from net.ssd.net_tool import get_default_boxes
+from data import TrainDataset
+from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 def main():
     cfg._print()
@@ -25,6 +28,18 @@ def main():
 
     # boxes=get_default_boxes()
     # print(boxes.shape)
+    data_set=TrainDataset()
+
+    data_loader=DataLoader(
+        data_set,
+        batch_size=cfg.batch_size,
+        shuffle=True,
+        drop_last=False,
+        num_workers=cfg.num_worker
+    )
+
+    for i,(imgs,targets,labels) in tqdm(enumerate(data_loader)):
+        print(imgs.shape,targets.shape,labels.shape)
 
 if __name__ == '__main__':
     main()

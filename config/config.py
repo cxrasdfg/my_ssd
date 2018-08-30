@@ -30,7 +30,9 @@ class CFG():
     l2norm_scale=20
 
     rand_seed=0
-    
+
+    batch_size=1
+    num_worker=1 
     epochs=10
     lr=1e-3
     weight_decay=0.0005

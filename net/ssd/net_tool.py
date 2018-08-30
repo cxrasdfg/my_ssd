@@ -282,8 +282,6 @@ def get_default_boxes(smin=cfg.smin,smax=cfg.smax,
 
 default_boxes=get_default_boxes()
 
-default_boxes=default_boxes.cuda() if cfg.use_cuda else default_boxes
-
 def calc_target_(gt_boxes,gt_labels,pos_thresh=cfg.pos_thresh):
     r"""Calculate the net target for SSD data generator
     Args:
@@ -313,12 +311,11 @@ def calc_target_(gt_boxes,gt_labels,pos_thresh=cfg.pos_thresh):
     final_target=torch.full([len(ious),4],0).type_as(gt_boxes) # [a_num,4]
 
     while 1:
-        miou,idx= temp_ious.max() # 
+        idx= temp_ious.argmax() # 
+        r_,c_=np.unravel_index(idx,temp_ious.shape)
+        miou=temp_ious[r_,c_]
         if miou<1e-10:
-            break
-
-        r_,c_=np.unravel_index(idx,miou.shape)
-        
+           break       
         # NOTE: Attention, we have already plused one...
         final_labels[r_]=gt_labels[c_]+1 
         final_target[r_]=gt_boxes[c_]

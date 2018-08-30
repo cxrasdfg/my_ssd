@@ -6,7 +6,7 @@ import torch
 import random
 
 from PIL import Image
-from torchcv.utils.box import box_iou, box_clamp
+from .utils.box import box_iou, box_clamp
 
 
 def random_crop(
@@ -54,7 +54,7 @@ def random_crop(
     mask = (center[:,0]>=x) & (center[:,0]<=x+w) \
          & (center[:,1]>=y) & (center[:,1]<=y+h)
     if mask.any():
-        boxes = boxes[mask.nonzero().squeeze()] - torch.Tensor([x,y,x,y])
+        boxes = boxes[mask.nonzero().squeeze(1)] - torch.Tensor([x,y,x,y])
         boxes = box_clamp(boxes, 0,0,w,h)
         labels = labels[mask]
     else:
