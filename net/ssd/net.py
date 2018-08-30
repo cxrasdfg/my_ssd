@@ -26,6 +26,8 @@ class SSD(torch.nn.Module):
     def __init__(self,class_num):
         super(SSD,self).__init__()
         
+        assert len(class_num)==21,"Only support VOC dataset currently..."
+        
         # this num should contain the background...
         self.class_num=class_num
 
@@ -118,6 +120,34 @@ class SSD(torch.nn.Module):
             res.append((loc_out,cls_out))
         
         return res
+    
+    def convert_features(self,x):
+        r"""Convert the feature after forward...
+        Args:
+            x (list[(tensor,tensor),...]):
+        Return:
+            locs (tensor[float32]): [b,N',4]
+            clss (tensor[float32]): [b,N',cls_num]
+        """
+        locs=torch.empty(0).type_as(x[0][0])
+        clses=loc.clone()
+        
+        for loc,cls in x:
+            # loc[b,c1,h,w], cls[b,c2,h,w]
+            b,_,h,w=loc.shape
+            loc=loc.view(b,-1,4,h,w) # [b,bnum,4,h,w]
+            loc=loc.permute(0,1,3,4,2).contiguous() # [b,bnum,h,w,4]
+            loc=loc.view(b,-1,4) # [b,bnum*h*w,4]
+            locs=torch.cat([loc,locs],dim=1) # [b,n'+bnum*h*w ,4]
+
+            cls=cls.view(b,-1,self.class_num,h,w) # [b,bnum,cls_num,h,w]
+            cls=cls.permute(0,1,3,4,2).contiguous() # [b,bnum,h,w,cls_num]
+            cls=cls.view(b,-1,self.class_num) # [b,bnum*h*w,cls_num]
+            clses=torch.cat([cls,clses],dim=1) # [b,n'+bnum*h*w,cls_num]
+
+        return locs,clses
+
+
 
     def train_once(self,imgs,target_,labels):
         r"""Train once
@@ -128,7 +158,9 @@ class SSD(torch.nn.Module):
         Return:
             loss (float)
         """
-        
+        # forward
+        x=self(imgs) # list: shape of [6]
+        out_locs,out_clses=self.convert_features(x) # 
 
     def get_optimizer(self):
         raise NotImplementedError("")
