@@ -78,6 +78,7 @@ def train():
         _map= eval_net(net=net,num=100,shuffle=True)['map']
         print("map:",_map)
         epoch+=1
+
     print(eval_net(net=net))
 
 def test_net():

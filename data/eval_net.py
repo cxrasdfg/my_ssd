@@ -74,11 +74,17 @@ def eval_net(net=None,num=cfg.eval_number,shuffle=False):
         plabel=pred_class[prob_mask ].long()
         pprob=pred_prob[prob_mask]
 
-        gt_bboxes += list(gt_box.numpy())
+        gt_box=gt_box.numpy()
+        if len(gt_box)!=0:
+            gt_box=gt_box[:,[1,0,3,2]] # change `xyxy` to `yxyx` 
+        gt_bboxes += list(gt_box )
         gt_labels += list(label.numpy())
         gt_difficults += list(diff.numpy().astype('bool'))
 
-        pred_bboxes+=[pbox.cpu().detach().numpy()]
+        pbox=pbox.cpu().detach().numpy()
+        if len(pbox)!=0:
+            pbox=pbox[:,[1,0,3,2]] # change `xyxy` to `yxyx`
+        pred_bboxes+=[pbox]
         pred_classes+=[plabel.cpu().numpy()]
         pred_scores+=[pprob.cpu().detach().numpy()]
 
