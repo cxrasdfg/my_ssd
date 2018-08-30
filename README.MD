@@ -5,7 +5,9 @@ ____
 ## TODO
 
 - [-] Roughly Implementation:
+    - [-] change lr
     - [-] train basicly
+
 - [-] In Paper:
     - [-] catch up performance reported in paper
     - [-] train on coco
