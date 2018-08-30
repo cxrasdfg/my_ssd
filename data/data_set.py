@@ -9,6 +9,8 @@ from config import cfg
 from torch.utils.data import Dataset  
 import numpy as np
 
+from net.ssd.net_tool import calc_target_
+
 from .transforms import random_crop,random_distort,\
     random_flip,random_paste,random_paste,scale_jitter,\
     resize as resize_box
@@ -18,7 +20,8 @@ name_list=voc_utils.voc_bbox_label_names
 def caffe_normalize(img):
     img = img[[2, 1, 0], :, :]  # RGB-BGR
     mean = np.array([122.7717, 115.9465, 102.9801]).reshape(3, 1, 1)
-    img=img*255.0
+    assert img.max()>1.0
+    img=img*255.0  
     img = (img - mean).astype(np.float32, copy=True)
     return img
 
@@ -86,6 +89,7 @@ class TrainDataset(Dataset):
 
         img,boxes,labels=TrainTransform(ori_img,boxes,labels)
 
+        target_,labels_=calc_target_(boxes,labels)
         return img,target_,labels_
 
 

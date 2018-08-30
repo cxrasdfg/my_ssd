@@ -227,7 +227,7 @@ def get_default_boxes(smin=cfg.smin,smax=cfg.smax,
                       ars=cfg.ar,im_size=cfg.intput_wh,
                       feat_map=cfg.feat_map,
                       steps=cfg.steps):
-    r"""
+    r"""Get default boxes
     """
     # smax and smin is percent...
     smin*=im_size
@@ -282,9 +282,10 @@ def get_default_boxes(smin=cfg.smin,smax=cfg.smax,
 
 default_boxes=get_default_boxes()
 
+default_boxes=default_boxes.cuda() if cfg.use_cuda else default_boxes
 
 def calc_target_(gt_boxes,gt_labels,pos_thresh=cfg.pos_thresh):
-    r"""Calculate the net target...
+    r"""Calculate the net target for SSD data generator
     Args:
         gt_boxes (np.ndarray[int32]): [n,4]
         gt_labels (np.ndarray[int32]): [n]
@@ -304,7 +305,38 @@ def calc_target_(gt_boxes,gt_labels,pos_thresh=cfg.pos_thresh):
 
     ious=t_box_iou(default_boxes,gt_boxes) # [a_num,n]
 
-    # first, find the highest ious between deafult boxes and ground truth...
+    # first, find the highest iou between deafult boxes and ground truth...
     temp_ious=ious.clone()
+
+    # -1 denotes no assignment, 0 is the neg, >1 means the labels of positive samples
+    final_labels=torch.full([len(ious)],-1).type_as(gt_labels) # [a_num], filled with -1
+    final_target=torch.full([len(ious),4],0).type_as(gt_boxes) # [a_num,4]
+
     while 1:
-       _,dix= temp_ious.max() # 
+        miou,idx= temp_ious.max() # 
+        if miou<1e-10:
+            break
+
+        r_,c_=np.unravel_index(idx)
+        
+        # NOTE: Attention, we have already plused one...
+        final_labels[r_]=gt_labels[c_]+1 
+        final_target[r_]=gt_boxes[c_]
+        temp_ious[r_,:]=0
+        temp_ious[:,c_]=0
+    
+    # assign for the iou > threshold
+    # NOTE: a default box can only be matched to one gt box, but a gt box can be matched to more than one gt boxes   
+    miou,idx=ious.max(dim=1) # [a_num]
+
+    mask=(miou>pos_thresh)*(final_labels<0) # [a_num], (final_labels<0) can prevent to cover the assignment before.
+    # NOTE: plus one
+    final_labels[mask]=gt_labels[ idx[mask] ]+1
+    final_target[mask]=gt_boxes[ idx[mask] ] 
+
+    final_target=encode_box(final_target,default_boxes)
+    
+    target_=final_target
+    labels_=final_labels
+    return target_,labels_
+
