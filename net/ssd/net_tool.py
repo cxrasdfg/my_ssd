@@ -281,6 +281,9 @@ def get_default_boxes(smin=cfg.smin,smax=cfg.smax,
     return default_boxes
 
 default_boxes=get_default_boxes()
+boxes_num=len(default_boxes)
+ssd_loc_mean=torch.tensor(cfg.loc_mean)[None].expand_as(boxes_num,-1)
+ssd_loc_std=torch.tensor(cfg.loc_std)[None].expand_as(boxes_num,-1)
 
 def calc_target_(gt_boxes,gt_labels,pos_thresh=cfg.pos_thresh):
     r"""Calculate the net target for SSD data generator
@@ -288,8 +291,8 @@ def calc_target_(gt_boxes,gt_labels,pos_thresh=cfg.pos_thresh):
         gt_boxes (np.ndarray[int32]): [n,4]
         gt_labels (np.ndarray[int32]): [n]
     Return 
-        target_ (torch.tensor[float32]): [b_num,4], b_num is the number of the default boxes
-        labels_(torch.tensor[long]): [b_num], indicates the class of the positive anchors(default box) and negative samples 
+        target_ (torch.tensor[float32]): [a_num,4], a_num is the number of the default boxes
+        labels_(torch.tensor[long]): [a_num], indicates the class of the positive anchors(default box) and negative samples 
     """
     # type check...
     if isinstance(gt_boxes,np.ndarray):
@@ -331,8 +334,11 @@ def calc_target_(gt_boxes,gt_labels,pos_thresh=cfg.pos_thresh):
     final_labels[mask]=gt_labels[ idx[mask] ]+1
     final_target[mask]=gt_boxes[ idx[mask] ] 
 
-    final_target=encode_box(final_target,default_boxes)
-    
+    final_target=encode_box(final_target,default_boxes) # [a_num,4]
+
+    final_target-=ssd_loc_mean
+    final_target/=ssd_loc_std
+
     target_=final_target
     labels_=final_labels
     return target_,labels_

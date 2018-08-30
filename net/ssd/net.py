@@ -3,8 +3,11 @@ import torch
 import numpy as np
 from config import cfg
 
+from libs import pth_nms as ext_nms
 from .vgg16_caffe import caffe_vgg16 as vgg16
-from .net_tool import default_boxes
+from .net_tool import default_boxes,decode_box,ssd_loc_mean,ssd_loc_std
+from .loss import SSDLoss
+
 
 class ConvBN2d(torch.nn.Module):
     def __init__(self,in_,out_,size_,pad_,stride_,bn_,relu_=True):
@@ -91,8 +94,30 @@ class SSD(torch.nn.Module):
         
         # get default boxes
         self.default_boxes=default_boxes
+        
+        self.loss_func=SSDLoss()
 
-        self.get_optimizer()
+        self.get_optimizer(lr=cfg.lr,use_adam=cfg.use_adam,weight_decay=cfg.weight_decay)
+
+    def get_optimizer(self,lr=1e-3,use_adam=False,weight_decay=0.0005):
+        """
+        return optimizer, It could be overwriten if you want to specify 
+        special optimizer
+        """
+        params=[]
+        for key, value in dict(self.named_parameters()).items():
+            if value.requires_grad:
+                if 'bias' in key:
+                    params += [{'params': [value], 'lr': lr * 2, 'weight_decay': 0}]
+                else:
+                    params += [{'params': [value], 'lr': lr, 'weight_decay': weight_decay}]
+        if use_adam:
+            print("Using Adam optimizer")
+            self.optimizer = torch.optim.Adam(params)
+        else:
+            print("Using SGD optimizer")
+            self.optimizer = torch.optim.SGD(params, momentum=0.9)
+        return self.optimizer
 
     def forward(self,x):
         x_4=self.conv4(x)
@@ -146,10 +171,8 @@ class SSD(torch.nn.Module):
             clses=torch.cat([cls,clses],dim=1) # [b,n'+bnum*h*w,cls_num]
 
         return locs,clses
-
-
-
-    def train_once(self,imgs,target_,labels):
+    
+    def train_once(self,imgs,target_,labels_):
         r"""Train once
         Args:
             imgs (tensor[float32]): [b,c,h,w]
@@ -160,10 +183,129 @@ class SSD(torch.nn.Module):
         """
         # forward
         x=self(imgs) # list: shape of [6]
-        out_locs,out_clses=self.convert_features(x) # 
+        out_locs,out_clses=self.convert_features(x) # [b,N',4] [b,N',cls_num]
+        
+        pos_mask=(labels_>0) # [b,tbnum]
+        neg_mask=(labels_<=0) # [b,tbnum]
+        pos_out_locs=out_locs[pos_mask] #  [n',4]
+        pos_out_clses=out_clses[pos_mask] # [n',cls_num]
 
-    def get_optimizer(self):
-        raise NotImplementedError("")
+        # NOTE: label has already plused by one
+        pos_gt_labels=labels_[pos_mask] # [n']
+        pos_gt_locs=target_[pos_mask] # [n',4]
+        
+        neg_out_clses=out_clses[neg_mask]
+
+        num_pos=len(pos_gt_labels)
+        num_neg=3*num_pos
+
+        # HNM(Hard Negative Mining)...
+        # by convention, use 0 represents negative scores...
+        _,idx=neg_out_clses[:,0].sort()
+        _,idx=idx.sort() # sort idx to get the position of each entry in the rank list...
+        rank_mask=idx<num_neg # just select top num_neg negative sample...
+        neg_out_clses=neg_out_clses[rank_mask] # [n'',4]
+
+        loss=self.loss_func(
+            pos_out_clses,
+            pos_gt_labels,
+            neg_out_clses,
+            pos_out_locs,
+            pos_gt_locs,
+            cfg.alpha
+        )
+
+        # gradient descent
+        loss.backward()
+        self.optimizer.step()
+        self.optimizer.zero_grad()
+
+        return loss.item()
+
+    def predict(self,img,src_shape):
+        r"""Predict an image
+        Args:
+            img (tensor[float32]): [b,3,h,w]
+            src_shape (tensor[int]): the width and height of the origin image
+        Return:
+            pred_boxes (list[tensor]): the detection result of each image
+            pred_labels (list[tensor]): the labels of predicted boxes for each image
+            pred_confs (list[tensor]): the confidence of this labels... 
+        """
+        x=self(img)
+        locs,clses=self.convert_features(x) 
+
+        pred_boxes=[]
+        pred_labels=[]
+        pred_confs=[]
+
+        mean=ssd_loc_mean[None].expand_as(locs).type_as(locs) # [b,tbum,4]
+        std=ssd_loc_std[None].expand_as(locs).type_as(locs) # [b,tbnum,4]
+        locs=locs*std+mean
+
+        locs=decode_box(locs,self.defeault_boxes[None].expand_as(locs))
+        for loc,cls in zip(locs,clses):
+            # loc[tbnum,4], cls [tbnum,cls_num]
+            
+            # remove neg
+            cls=cls[:,1:]
+            temp=self.nms(torch.cat([loc,cls],dim=1),cfg.out_thruth_thresh) # [n',4+cls_num-1]
+            temp_scores=temp[:,4:] # scores
+            scores,idx=temp_scores.max(dim=1)
+            
+            pred_box=temp[:,:4]
+            pred_label=idx
+            pred_conf=scores
+
+            # NOTE: as the paper says, keep top-N score's boxes per image
+            _max,_idx=pred_conf.sort(descending=True)
+            _idx=_idx[:cfg.out_box_num_per_im]
+            pred_box=pred_box[_idx]
+            pred_label=pred_label[_idx]
+            pred_conf=pred_conf[_idx]
+
+            pred_boxes.append(pred_box)
+            pred_labels.append(pred_label)
+            pred_confs.append(pred_conf)
+
+        return pred_boxes,pred_labels,pred_confs
+
+
+    def nms(self,rois,thresh=.7,filter_=1e-10):
+        """
+        nms to remove the duplication
+        input:
+            rois (tensor): [N,4+cls_num], attention that the location format is `xyxy`
+            thresh (float): the threshold for nms
+        return:
+            rois (tensor): [M,4+cls_num], regions after nms 
+        """
+        cls_num=rois.shape[1]-4
+        
+        for i in range(cls_num):
+            dets=rois[:,[0,1,2,3,i+4]]
+            order=ext_nms(dets,thresh=thresh)
+            mask=torch.full([len(dets)],1,dtype=torch.uint8)
+            mask[order]=0
+            del order
+            rois[:,i+4][mask]=0
+        
+        sorted_rois,_=rois[:,4:].max(dim=1)
+        rois=rois[sorted_rois>filter_] # [M,4+cls_num] 
+
+        return rois 
+
+    def cuda(self,did=0):
+        torch.nn.Module.cuda(self,did)
+        if not self.default_boxes.is_cuda:
+            self.default_boxes=self.default_boxes.cuda(did)
+        return self
+
+    def cpu(self):
+        torch.nn.Module.cpu(self)
+        if self.default_boxes.is_cuda:
+            self.default_boxes=self.default_boxes.cpu()
+        return self
 
     def _print(self):
         print('********\t NET STRUCTURE \t********')

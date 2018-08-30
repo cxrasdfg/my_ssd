@@ -10,8 +10,8 @@ class CFG():
 
     caffe_model="./models/vgg16_caffe_pretrain.pth"
     
-    # loc_mean=[.0,.0,.0,.0]
-    # loc_std=[1.,1.,2.,2.]
+    loc_mean=[.0,.0,.0,.0]
+    loc_std=[.1,.1,.2,.2]
 
     use_batchnorm=False
 
@@ -33,12 +33,18 @@ class CFG():
 
     batch_size=1
     num_worker=1 
+
+    alpha=1.
+    sigma=1.
     epochs=10
     lr=1e-3
     weight_decay=0.0005
     use_adam=False
 
     out_thruth_thresh=.5
+    out_nms=.45
+    out_nms_filter=.01
+    out_box_num_per_im=200
     pos_thresh=.5
 
     def _print(self):
