@@ -222,17 +222,24 @@ class SSD(torch.nn.Module):
 
         return loss.item()
 
-    def predict(self,img,src_shape):
+    def predict(self,imgs,src_shape):
         r"""Predict an image
         Args:
             img (tensor[float32]): [b,3,h,w]
-            src_shape (tensor[int]): the width and height of the origin image
+            src_shape (tensor[float32]): [b,2] the width and height of the origin image
         Return:
             pred_boxes (list[tensor]): the detection result of each image
             pred_labels (list[tensor]): the labels of predicted boxes for each image
             pred_confs (list[tensor]): the confidence of this labels... 
         """
-        x=self(img)
+        ratios= src_shape/\
+            torch.tensor(
+                imgs.shape[2:][::-1]
+            )[None].expand_as(src_shape).type_as(imgs) # [b,2]
+
+        ratios=torch.cat([ratios,ratios],dim=1) # [b,4]
+
+        x=self(imgs)
         locs,clses=self.convert_features(x) 
 
         pred_boxes=[]
@@ -244,7 +251,7 @@ class SSD(torch.nn.Module):
         locs=locs*std+mean
 
         locs=decode_box(locs,self.defeault_boxes[None].expand_as(locs))
-        for loc,cls in zip(locs,clses):
+        for loc,cls,ratio in zip(locs,clses,ratios):
             # loc[tbnum,4], cls [tbnum,cls_num]
             
             # remove neg
@@ -263,6 +270,8 @@ class SSD(torch.nn.Module):
             pred_box=pred_box[_idx]
             pred_label=pred_label[_idx]
             pred_conf=pred_conf[_idx]
+
+            pred_box*=ratio[None].expand_as(pred_box)
 
             pred_boxes.append(pred_box)
             pred_labels.append(pred_label)
