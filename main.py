@@ -76,6 +76,53 @@ def train():
         epoch+=1
     print(eval_net(net=net))
 
+def test_net():
+    data_set=TestDataset()
+    data_loader=DataLoader(data_set,batch_size=1,shuffle=True,drop_last=False)
+
+    classes=data_set.classes
+    net=MyNet(classes)
+    _,_,last_time_model=get_check_point()
+    # assign directly
+    # last_time_model='./weights/weights_21_110242'
+
+    if os.path.exists(last_time_model):
+        model=torch.load(last_time_model)
+        if cfg.test_use_offline_feat:
+            net.load_state_dict(model)
+        else:
+            net.load_state_dict(model)
+        print("Using the model from the last check point:`%s`"%(last_time_model))
+    else:
+        raise ValueError("no model existed...")
+    net.eval()
+    is_cuda=cfg.use_cuda
+    did=cfg.device_id
+    # img_src=cv2.imread("/root/workspace/data/VOC2007_2012/VOCdevkit/VOC2007/JPEGImages/000012.jpg")
+    # img_src=cv2.imread('./example.jpg')
+    img_src=cv2.imread('./dog.jpg') # BGR
+    img=img_src[:,:,::-1] # RGB
+    h,w,_=img.shape
+    img=img.transpose(2,0,1) # [c,h,w]
+
+    img=preprocess(img)
+    img=img[None]
+    img=torch.tensor(img)
+    if is_cuda:
+        net.cuda(did)
+        img=img.cuda(did)
+    boxes,labels,probs=net(img,torch.tensor([[w,h]]).type_as(img))[0]
+
+    prob_mask=probs>cfg.out_thruth_thresh
+    boxes=boxes[prob_mask ] 
+    labels=labels[prob_mask ].long()
+    probs=probs[prob_mask]
+    draw_box(img_src,boxes,color='pred',
+        text_list=[ 
+            classes[_]+'[%.3f]'%(__)  for _,__ in zip(labels,probs)
+            ]
+        )
+    show_img(img_src,-1)
 
 if __name__ == '__main__':
     opt=sys.argv[1]
