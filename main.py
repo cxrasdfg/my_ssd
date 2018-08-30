@@ -12,10 +12,14 @@ torch.cuda.manual_seed(cfg.rand_seed)
 
 from net import SSD
 from net.ssd.net_tool import get_default_boxes
-from data import TrainDataset,eval_net,get_check_point
+from data import TrainDataset,\
+    eval_net,get_check_point,\
+    read_image,TestTransform,\
+    draw_bbox as draw_box,show_img
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import sys
+import os
 
 def train():
     cfg._print()
@@ -77,46 +81,45 @@ def train():
     print(eval_net(net=net))
 
 def test_net():
-    data_set=TestDataset()
-    data_loader=DataLoader(data_set,batch_size=1,shuffle=True,drop_last=False)
+    data_set=TrainDataset()
 
     classes=data_set.classes
-    net=MyNet(classes)
+    net=SSD(len(classes)+1)
     _,_,last_time_model=get_check_point()
     # assign directly
     # last_time_model='./weights/weights_21_110242'
 
     if os.path.exists(last_time_model):
         model=torch.load(last_time_model)
-        if cfg.test_use_offline_feat:
-            net.load_state_dict(model)
-        else:
-            net.load_state_dict(model)
+        net.load_state_dict(model)
         print("Using the model from the last check point:`%s`"%(last_time_model))
     else:
         raise ValueError("no model existed...")
+
     net.eval()
     is_cuda=cfg.use_cuda
     did=cfg.device_id
-    # img_src=cv2.imread("/root/workspace/data/VOC2007_2012/VOCdevkit/VOC2007/JPEGImages/000012.jpg")
-    # img_src=cv2.imread('./example.jpg')
-    img_src=cv2.imread('./dog.jpg') # BGR
-    img=img_src[:,:,::-1] # RGB
-    h,w,_=img.shape
-    img=img.transpose(2,0,1) # [c,h,w]
 
-    img=preprocess(img)
+    img_src=read_image('./data/img/dog.jpg')
+    w,h=img_src.size
+
+    img=TestTransform(img_src,torch.tensor([[0,0,1,1]])) # [c,h,w]
     img=img[None]
-    img=torch.tensor(img)
+
     if is_cuda:
         net.cuda(did)
         img=img.cuda(did)
-    boxes,labels,probs=net(img,torch.tensor([[w,h]]).type_as(img))[0]
+    boxes,labels,probs=net.predict(img,torch.tensor([[w,h]]).type_as(img))[0]
 
     prob_mask=probs>cfg.out_thruth_thresh
     boxes=boxes[prob_mask ] 
     labels=labels[prob_mask ].long()
     probs=probs[prob_mask]
+
+    img_src=np.array(img_src) # [h,w,3] 'RGB'
+    # change to 'BGR'
+    img_src=img_src[:,:,::-1]
+
     draw_box(img_src,boxes,color='pred',
         text_list=[ 
             classes[_]+'[%.3f]'%(__)  for _,__ in zip(labels,probs)

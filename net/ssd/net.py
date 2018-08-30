@@ -228,9 +228,7 @@ class SSD(torch.nn.Module):
             img (tensor[float32]): [b,3,h,w]
             src_shape (tensor[float32]): [b,2] the width and height of the origin image
         Return:
-            pred_boxes (list[tensor]): the detection result of each image
-            pred_labels (list[tensor]): the labels of predicted boxes for each image
-            pred_confs (list[tensor]): the confidence of this labels... 
+            res (list[(boxes,classes,confs),...]) 
         """
         ratios= src_shape/\
             torch.tensor(
@@ -242,9 +240,7 @@ class SSD(torch.nn.Module):
         x=self(imgs)
         locs,clses=self.convert_features(x) 
 
-        pred_boxes=[]
-        pred_labels=[]
-        pred_confs=[]
+        res=[]
 
         mean=ssd_loc_mean[None].expand_as(locs).type_as(locs) # [b,tbum,4]
         std=ssd_loc_std[None].expand_as(locs).type_as(locs) # [b,tbnum,4]
@@ -273,11 +269,9 @@ class SSD(torch.nn.Module):
 
             pred_box*=ratio[None].expand_as(pred_box)
 
-            pred_boxes.append(pred_box)
-            pred_labels.append(pred_label)
-            pred_confs.append(pred_conf)
+            res.append((pred_box,pred_label,pred_conf))
 
-        return pred_boxes,pred_labels,pred_confs
+        return res
 
 
     def nms(self,rois,thresh=.7,filter_=1e-10):

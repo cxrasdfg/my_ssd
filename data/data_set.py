@@ -65,6 +65,11 @@ def TrainTransform(img,boxes,labels):
 
 def TestTransform(img,boxes):
     r"""For the preprocess of test data
+    Args:
+        img (PIL.Image): 
+        boxes (tensor): no use
+    Return:
+        img (tensor[float32]): [c,h,w], pixel range:[0,1.] 
     """
     if isinstance(boxes,np.ndarray):
         boxes=torch.tensor(boxes).float()
