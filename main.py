@@ -21,6 +21,18 @@ from tqdm import tqdm
 import sys
 import os
 
+def adjust_lr(opt,iters,lrs=cfg.lrs):
+    lr=0
+    for k,v in lrs.items():
+        lr=v
+        if iters<int(k):
+            break
+
+    for param_group in opt.param_groups:
+        
+        param_group['lr'] = lr
+
+
 def train():
     cfg._print()
    
@@ -71,6 +83,7 @@ def train():
             tqdm.write('Epoch:%d, iter:%d, loss:%.5f'%(epoch,iteration,_loss))
 
             iteration+=1
+            adjust_lr(net.optimizer,iteration,cfg.lrs)
 
         torch.save(net.state_dict(),'%sweights_%d_%d'%(cfg.weights_dir,epoch,iteration) )
         epoch+=1

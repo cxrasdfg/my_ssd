@@ -108,10 +108,11 @@ class SSD(torch.nn.Module):
         params=[]
         for key, value in dict(self.named_parameters()).items():
             if value.requires_grad:
-                if 'bias' in key:
-                    params += [{'params': [value], 'lr': lr * 2, 'weight_decay': 0}]
-                else:
-                    params += [{'params': [value], 'lr': lr, 'weight_decay': weight_decay}]
+                # if 'bias' in key:
+                #     params += [{'params': [value], 'lr': lr * 2, 'weight_decay': 0}]
+                # else:
+                #     params += [{'params': [value], 'lr': lr, 'weight_decay': weight_decay}]
+                params += [{'params': [value], 'lr': lr, 'weight_decay': weight_decay}]
         if use_adam:
             print("Using Adam optimizer")
             self.optimizer = torch.optim.Adam(params)

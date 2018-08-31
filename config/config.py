@@ -37,8 +37,9 @@ class CFG():
 
     alpha=1.
     sigma=1.
-    epochs=10
+    epochs=30
     lr=1e-3
+    lrs={'40000':lr,'50000':lr/10.,'60000':lr/100.}
     weight_decay=0.0005
     use_adam=False
 
