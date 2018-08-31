@@ -1,4 +1,4 @@
-# coding=UTF-8
+# coding=utf-8
 import torch
 import numpy as np
 from config import cfg
@@ -165,12 +165,12 @@ class SSD(torch.nn.Module):
             loc=loc.view(b,-1,4,h,w) # [b,bnum,4,h,w]
             loc=loc.permute(0,1,3,4,2).contiguous() # [b,bnum,h,w,4]
             loc=loc.view(b,-1,4) # [b,bnum*h*w,4]
-            locs=torch.cat([loc,locs],dim=1) # [b,n'+bnum*h*w ,4]
+            locs=torch.cat([locs,loc],dim=1) # [b,n'+bnum*h*w ,4]
 
             cls=cls.view(b,-1,self.class_num,h,w) # [b,bnum,cls_num,h,w]
             cls=cls.permute(0,1,3,4,2).contiguous() # [b,bnum,h,w,cls_num]
             cls=cls.view(b,-1,self.class_num) # [b,bnum*h*w,cls_num]
-            clses=torch.cat([cls,clses],dim=1) # [b,n'+bnum*h*w,cls_num]
+            clses=torch.cat([clses,cls],dim=1) # [b,n'+bnum*h*w,cls_num]
             # tqdm.write('h:%d,w:%d' %(h,w) ,end=',\t ')
 
         return locs,clses

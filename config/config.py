@@ -1,7 +1,7 @@
-# coding=UTF-8
+# coding=utf-8
 
 class CFG():
-    voc_dir='/root/workspace/data/VOCdevkit/VOC2007'
+    voc_dir='/root/workspace/D/VOC2007_2012/VOCdevkit/VOC2007'
 
     device_id=0
     use_cuda=True
