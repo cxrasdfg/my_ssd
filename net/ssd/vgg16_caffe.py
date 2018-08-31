@@ -42,6 +42,10 @@ def caffe_vgg16():
     # change the pool from 2x2-s2 to 3x3-s1
     conv5_3+=[torch.nn.MaxPool2d(3,1,padding=1,dilation=1)]
 
+    # freeze top4 conv
+    for layer in conv4_3[:10]:
+        for p in layer.parameters():
+            p.requires_grad = False		
     conv4_3=torch.nn.Sequential(*conv4_3)
     conv5_3=torch.nn.Sequential(*conv5_3)
 

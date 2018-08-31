@@ -11,7 +11,7 @@ class CFG():
     caffe_model="./models/vgg16_caffe_pretrain.pth"
     
     loc_mean=[.0,.0,.0,.0]
-    loc_std=[.1,.1,.2,.2]
+    loc_std=[1.,1.,2.,2.]
 
     use_batchnorm=False
 
@@ -32,7 +32,7 @@ class CFG():
 
     rand_seed=0
 
-    batch_size=32
+    batch_size=30
     num_worker=8
 
     alpha=1.
