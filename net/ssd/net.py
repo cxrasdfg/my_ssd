@@ -186,10 +186,9 @@ class SSD(torch.nn.Module):
         """
         # forward
         x=self(imgs) # list: shape of [6]
-        out_locs,out_clses=self.convert_features(x) # [b,N',4] [b,N',cls_num]
+        out_locs,out_clses=self.convert_features(x) # [b,tbnum,4] [b,tbum,cls_num]
         
         pos_mask=(labels_>0) # [b,tbnum]
-        neg_mask=(labels_<=0) # [b,tbnum]
         pos_out_locs=out_locs[pos_mask] #  [n',4]
         pos_out_clses=out_clses[pos_mask] # [n',cls_num]
 
@@ -197,17 +196,17 @@ class SSD(torch.nn.Module):
         pos_gt_labels=labels_[pos_mask] # [n']
         pos_gt_locs=target_[pos_mask] # [n',4]
         
-        neg_out_clses=out_clses[neg_mask]
-
-        num_pos=len(pos_gt_labels)
-        num_neg=3*num_pos
 
         # HNM(Hard Negative Mining)...
         # by convention, use 0 represents negative scores...
-        _,idx=neg_out_clses[:,0].sort()
-        _,idx=idx.sort() # sort idx to get the position of each entry in the rank list...
-        rank_mask=idx<num_neg # just select top num_neg negative sample...
-        neg_out_clses=neg_out_clses[rank_mask] # [n'',4]
+        neg_out_clses=out_clses[:,:,0].clone() # [b,tbnum]
+        neg_out_clses[pos_mask]=1e10 
+        _,idx=neg_out_clses.sort(dim=1) # [b,tbnum]
+        _,idx=idx.sort(dim=1) # [b,tbnum], get the rank...
+        # NOTE: ratio of pos and neg is 1:3
+        num_neg=3*pos_mask.long().sum(dim=1) # [b]
+        rank_mask=idx<num_neg[:,None].expand_as(idx) # [b,tbnum] just select top num_neg negative sample...
+        neg_out_clses=out_clses[rank_mask] # [n'',cls_num]
 
         loss=self.loss_func(
             pos_out_clses,
