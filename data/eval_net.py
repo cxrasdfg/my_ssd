@@ -76,13 +76,10 @@ def eval_net(net=None,num=cfg.eval_number,shuffle=False):
         pprob=pred_prob[prob_mask]
 
         gt_box=gt_box.numpy()
-        gt_box=gt_box[0]
-        label=label[0]
-        diff=diff[0]
 
         if len(gt_box)!=0:
             # print(gt_box.shape)
-            gt_box=gt_box[:,[1,0,3,2]] # change `xyxy` to `yxyx` 
+            gt_box=gt_box[:,:,[1,0,3,2]] # change `xyxy` to `yxyx` 
         gt_bboxes += list(gt_box )
         gt_labels += list(label.numpy())
         gt_difficults += list(diff.numpy().astype('bool'))

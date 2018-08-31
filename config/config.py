@@ -49,7 +49,7 @@ class CFG():
     out_box_num_per_im=200
     pos_thresh=.5
 
-    eval_number=10000
+    eval_number=10
 
     def _print(self):
         print('Config')
