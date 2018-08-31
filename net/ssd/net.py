@@ -2,6 +2,7 @@
 import torch
 import numpy as np
 from config import cfg
+from tqdm import tqdm
 
 from libs import pth_nms as ext_nms
 from .vgg16_caffe import caffe_vgg16 as vgg16
@@ -29,7 +30,7 @@ class SSD(torch.nn.Module):
     def __init__(self,class_num):
         super(SSD,self).__init__()
         
-        assert len(class_num)==21,"Only support VOC dataset currently..."
+        assert class_num==21,"Only support VOC dataset currently..."
         
         # this num should contain the background...
         self.class_num=class_num
@@ -155,7 +156,7 @@ class SSD(torch.nn.Module):
             clss (tensor[float32]): [b,N',cls_num]
         """
         locs=torch.empty(0).type_as(x[0][0])
-        clses=loc.clone()
+        clses=locs.clone()
         
         for loc,cls in x:
             # loc[b,c1,h,w], cls[b,c2,h,w]
@@ -169,6 +170,7 @@ class SSD(torch.nn.Module):
             cls=cls.permute(0,1,3,4,2).contiguous() # [b,bnum,h,w,cls_num]
             cls=cls.view(b,-1,self.class_num) # [b,bnum*h*w,cls_num]
             clses=torch.cat([cls,clses],dim=1) # [b,n'+bnum*h*w,cls_num]
+            # tqdm.write('h:%d,w:%d' %(h,w) ,end=',\t ')
 
         return locs,clses
     
@@ -216,6 +218,8 @@ class SSD(torch.nn.Module):
         )
 
         # gradient descent
+        if isinstance(loss,int) and loss==0:
+            return 0
         loss.backward()
         self.optimizer.step()
         self.optimizer.zero_grad()

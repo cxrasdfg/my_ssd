@@ -9,7 +9,7 @@ from torch.utils.data import Dataset
 import numpy as np
 
 from net.ssd.net_tool import calc_target_
-from tqdm import tdqm
+from tqdm import tqdm
 
 from .vocdataset import VOCBboxDataset
 from .transforms import random_crop,random_distort,\
@@ -91,7 +91,7 @@ def TestTransform(img,boxes):
 class TrainDataset(Dataset):
     classes=name_list
     def __init__(self):
-        self.cfg=cfg
+        #self.cfg=cfg
         self.sdb=VOCBboxDataset(cfg.voc_dir,'trainval')
     
     def __getitem__(self,idx):
@@ -110,7 +110,7 @@ class TrainDataset(Dataset):
 
         target_,labels_=calc_target_(boxes,labels)
         num_pos=(labels_>0).sum()
-        tdqm.write("Image Id:%, number of pos:%d"%(idx,num_pos) ,end=',\t ' )
+        tqdm.write("Image Id:%d, number of pos:%d"%(idx,num_pos) ,end=',\t ' )
 
         return img,target_,labels_
 

@@ -282,8 +282,8 @@ def get_default_boxes(smin=cfg.smin,smax=cfg.smax,
 
 default_boxes=get_default_boxes()
 boxes_num=len(default_boxes)
-ssd_loc_mean=torch.tensor(cfg.loc_mean)[None].expand_as(boxes_num,-1)
-ssd_loc_std=torch.tensor(cfg.loc_std)[None].expand_as(boxes_num,-1)
+ssd_loc_mean=torch.tensor(cfg.loc_mean)[None].expand(boxes_num,-1)
+ssd_loc_std=torch.tensor(cfg.loc_std)[None].expand(boxes_num,-1)
 
 def calc_target_(gt_boxes,gt_labels,pos_thresh=cfg.pos_thresh):
     r"""Calculate the net target for SSD data generator

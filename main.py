@@ -60,12 +60,12 @@ def train():
 
     while epoch<cfg.epochs:
         
-        print('********\t EPOCH %d \t********' % (epoch))
+        # print('********\t EPOCH %d \t********' % (epoch))
         for i,(imgs,targets,labels) in tqdm(enumerate(data_loader)):
             if is_cuda:
                 imgs=imgs.cuda(did)
                 targets=targets.cuda(did)
-                labels.cuda(did)
+                labels=labels.cuda(did)
 
             _loss=net.train_once(imgs,targets,labels)
             tqdm.write('Epoch:%d, iter:%d, loss:%.5f'%(epoch,iteration,_loss))

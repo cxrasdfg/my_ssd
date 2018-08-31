@@ -1,7 +1,7 @@
 # coding=UTF-8
 
 class CFG():
-    voc_dir='/home/theppsh/workspace/data/voc/VOCdevkit/VOC2007'
+    voc_dir='/root/workspace/data/VOCdevkit/VOC2007'
 
     device_id=0
     use_cuda=True
@@ -23,7 +23,8 @@ class CFG():
     # aspect ratio
     ar=[[1,2],[1,2,3],[1,2,3],[1,2,3],[1,2],[1,2]]
     # about the net
-    feat_map=[38,19,10,5,3,1] # h equals to w
+    # feat_map=[38,19,10,5,3,1] # h equals to w
+    feat_map=[37,18,9,5,3,1] # h equals to w
     det_in_channels=[512,1024,512,256,256,256]
     steps = [8, 16, 32, 64, 100, 300]
 
@@ -31,8 +32,8 @@ class CFG():
 
     rand_seed=0
 
-    batch_size=1
-    num_worker=1 
+    batch_size=32
+    num_worker=0
 
     alpha=1.
     sigma=1.
