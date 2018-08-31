@@ -251,7 +251,7 @@ class SSD(torch.nn.Module):
         std=ssd_loc_std[None].expand_as(locs).type_as(locs) # [b,tbnum,4]
         locs=locs*std+mean
 
-        locs=decode_box(locs,self.defeault_boxes[None].expand_as(locs))
+        locs=decode_box(locs,self.default_boxes[None].expand_as(locs))
         for loc,cls,ratio in zip(locs,clses,ratios):
             # loc[tbnum,4], cls [tbnum,cls_num]
             
@@ -261,6 +261,7 @@ class SSD(torch.nn.Module):
             temp_scores=temp[:,4:] # scores
             scores,idx=temp_scores.max(dim=1)
             
+            # print("shape en?",temp.shape)
             pred_box=temp[:,:4]
             pred_label=idx
             pred_conf=scores
@@ -272,6 +273,7 @@ class SSD(torch.nn.Module):
             pred_label=pred_label[_idx]
             pred_conf=pred_conf[_idx]
 
+            # print("shape en?",pred_box.shape)
             pred_box*=ratio[None].expand_as(pred_box)
 
             res.append((pred_box,pred_label,pred_conf))

@@ -131,7 +131,7 @@ class TestDataset(Dataset):
         boxes=boxes[:,[1,0,3,2]] # change `yxyx` to `xyxy`
 
         img=TestTransform(ori_img,boxes.copy() )
-        return img, np.array(ori_img.shape[:2][::-1]),\
+        return img, np.array(ori_img.size),\
             boxes,labels.astype('long'), diffs.astype('int')
 
     def __len__(self):

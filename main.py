@@ -117,7 +117,7 @@ def test_net():
     img_src=read_image('./data/img/dog.jpg')
     w,h=img_src.size
 
-    img=TestTransform(img_src,torch.tensor([[0,0,1,1]])) # [c,h,w]
+    img=TestTransform(img_src,torch.tensor([[0,0,1,1]]).float()) # [c,h,w]
     img=img[None]
 
     if is_cuda:
@@ -134,9 +134,10 @@ def test_net():
     # change to 'BGR'
     img_src=img_src[:,:,::-1]
 
-    draw_box(img_src,boxes,color='pred',
-        text_list=[ 
-            classes[_]+'[%.3f]'%(__)  for _,__ in zip(labels,probs)
+    if len(boxes) !=0:
+        draw_box(img_src,boxes,color='pred',
+            text_list=[ 
+                classes[_]+'[%.3f]'%(__)  for _,__ in zip(labels,probs)
             ]
         )
     show_img(img_src,-1)

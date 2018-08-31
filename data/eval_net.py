@@ -1,5 +1,6 @@
 # coding=UTF-8
 
+import torch
 from data import TestDataset
 from torch.utils.data import DataLoader
 from chainercv.evaluations import eval_detection_voc as voc_eval
@@ -59,11 +60,11 @@ def eval_net(net=None,num=cfg.eval_number,shuffle=False):
     pred_scores=[]
 
     for i,(img,sr_im_size,gt_box,label,diff) in tqdm(enumerate(data_loader)):
+        assert img.shape[0]==1
         if i> upper_bound:
             break
 
         sr_im_size=sr_im_size.float()
-        cur_im_size=cur_im_size.float()
         if is_cuda:
             img=img.cuda(did)
             im_size=sr_im_size.cuda(did)
@@ -75,7 +76,12 @@ def eval_net(net=None,num=cfg.eval_number,shuffle=False):
         pprob=pred_prob[prob_mask]
 
         gt_box=gt_box.numpy()
+        gt_box=gt_box[0]
+        label=label[0]
+        diff=diff[0]
+
         if len(gt_box)!=0:
+            # print(gt_box.shape)
             gt_box=gt_box[:,[1,0,3,2]] # change `xyxy` to `yxyx` 
         gt_bboxes += list(gt_box )
         gt_labels += list(label.numpy())
