@@ -110,7 +110,7 @@ class TrainDataset(Dataset):
 
         target_,labels_=calc_target_(boxes,labels)
         num_pos=(labels_>0).sum()
-        tqdm.write("Image Id:%d, number of pos:%d"%(idx,num_pos) ,end=',\t ' )
+        # tqdm.write("Image Id:%d, number of pos:%d"%(idx,num_pos) ,end=',\t ' )
 
         return img,target_,labels_
 

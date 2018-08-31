@@ -33,7 +33,7 @@ class CFG():
     rand_seed=0
 
     batch_size=32
-    num_worker=0
+    num_worker=8
 
     alpha=1.
     sigma=1.
