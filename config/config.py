@@ -9,7 +9,8 @@ class CFG():
     weights_dir='./weights/'
 
     caffe_model="./models/vgg16_caffe_pretrain.pth"
-    
+    use_caffe=False
+
     loc_mean=[.0,.0,.0,.0]
     loc_std=[1.,1.,2.,2.]
 
@@ -32,7 +33,7 @@ class CFG():
 
     rand_seed=0
 
-    batch_size=30
+    batch_size=32
     num_worker=8
 
     alpha=1.

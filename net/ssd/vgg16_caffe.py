@@ -28,8 +28,11 @@ class L2Norm(torch.nn.Module):
 def caffe_vgg16():
     r"""[2,m1,2,m2,3,m3,3,m4,3,m5,fc6,fc7,fc8]
     """
-    base_model=vgg16(False)
-    base_model.load_state_dict(torch.load(cfg.caffe_model) )
+    if cfg.use_caffe:
+        base_model=vgg16(False)
+        base_model.load_state_dict(torch.load(cfg.caffe_model) )
+    else:
+        base_model=vgg16(True)
     # 21 is Conv4-3, 30 is the max pooling
     # 23 is the max pooling..., must use 23 since 22 is relu of Conv4-3
     features=list(base_model.features)[:30] # list...

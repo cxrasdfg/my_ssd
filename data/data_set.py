@@ -27,6 +27,29 @@ def caffe_normalize(img):
     img = (img - mean).float()
     return img
 
+def torch_normalize(img):
+    assert img.max()<=1.0
+    # img=img/255.0
+    img=torchvision.transforms.Normalize(mean=[0.485,0.456,0.406],
+        std=[0.229,0.224,0.224])(img)
+
+    return img
+
+
+def img_normalize(img):
+    r"""Image normalize...
+    Args:
+        img: [PIL.Image]: [h,w,c], `RGB` format in [0,255]
+    Return:
+        img (tensor[float32])
+    """
+    return transforms.Compose([
+        transforms.ToTensor(),
+        caffe_normalize if cfg.use_caffe else torch_normalize
+    ])(img)
+
+
+
 def TrainTransform(img,boxes,labels):
     r"""Data augmentation transform
     Args:
@@ -57,10 +80,7 @@ def TrainTransform(img,boxes,labels):
     )
 
     img, boxes = random_flip(img, boxes)
-    img = transforms.Compose([
-        transforms.ToTensor(),
-        caffe_normalize
-    ])(img)
+    img=img_normalize(img)
 
     return img, boxes, labels
 
@@ -80,10 +100,7 @@ def TestTransform(img,boxes):
         random_interpolation=True
     )
 
-    img = transforms.Compose([
-        transforms.ToTensor(),
-        caffe_normalize
-    ])(img)
+    img=img_normalize(img)
 
     return img
 
