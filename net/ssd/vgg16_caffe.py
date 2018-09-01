@@ -33,6 +33,11 @@ def caffe_vgg16():
         base_model.load_state_dict(torch.load(cfg.caffe_model) )
     else:
         base_model=vgg16(True)
+    # open ceil mode
+    for _ in list(base_model.features):
+        if isinstance(_,torch.nn.MaxPool2d):
+            _.ceil_mode=True
+
     # 21 is Conv4-3, 30 is the max pooling
     # 23 is the max pooling..., must use 23 since 22 is relu of Conv4-3
     features=list(base_model.features)[:30] # list...
@@ -43,7 +48,7 @@ def caffe_vgg16():
     conv4_3+=[L2Norm(conv4_3[-2].out_channels,cfg.l2norm_scale)]
 
     # change the pool from 2x2-s2 to 3x3-s1
-    conv5_3+=[torch.nn.MaxPool2d(3,1,padding=1,dilation=1)]
+    conv5_3+=[torch.nn.MaxPool2d(3,1,padding=1,dilation=1,ceil_mode=True)]
 
     # freeze top4 conv
     for layer in conv4_3[:23]:

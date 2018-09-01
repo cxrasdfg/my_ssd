@@ -9,7 +9,7 @@ class CFG():
     weights_dir='./weights/'
 
     caffe_model="./models/vgg16_caffe_pretrain.pth"
-    use_caffe=False
+    use_caffe=True
 
     loc_mean=[.0,.0,.0,.0]
     loc_std=[1.,1.,2.,2.]
@@ -24,8 +24,8 @@ class CFG():
     # aspect ratio
     ar=[[1,2],[1,2,3],[1,2,3],[1,2,3],[1,2],[1,2]]
     # about the net
-    # feat_map=[38,19,10,5,3,1] # h equals to w
-    feat_map=[37,18,9,5,3,1] # h equals to w
+    feat_map=[38,19,10,5,3,1] # h equals to w
+    # feat_map=[37,18,9,5,3,1] # h equals to w
     det_in_channels=[512,1024,512,256,256,256]
     steps = [8, 16, 32, 64, 100, 300]
 
