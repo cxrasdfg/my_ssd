@@ -45,7 +45,7 @@ def caffe_vgg16():
     conv5_3=features[23:]
 
     # add the L2-Norm behind the conv4-3  
-    conv4_3+=[L2Norm(conv4_3[-2].out_channels,cfg.l2norm_scale)]
+    # conv4_3+=[L2Norm(conv4_3[-2].out_channels,cfg.l2norm_scale)]
 
     # change the pool from 2x2-s2 to 3x3-s1
     conv5_3+=[torch.nn.MaxPool2d(3,1,padding=1,dilation=1,ceil_mode=True)]

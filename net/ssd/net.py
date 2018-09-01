@@ -5,7 +5,7 @@ from config import cfg
 from tqdm import tqdm
 
 from libs import pth_nms as ext_nms
-from .vgg16_caffe import caffe_vgg16 as vgg16
+from .vgg16_caffe import caffe_vgg16 as vgg16,L2Norm
 from .net_tool import default_boxes,decode_box,ssd_loc_mean,ssd_loc_std
 from .loss import SSDLoss
 
@@ -36,6 +36,7 @@ class SSD(torch.nn.Module):
         self.class_num=class_num
 
         self.conv4,self.conv5,self.conv6,self.conv7=vgg16()
+        self.l2_norm=L2Norm(self.conv4[-2].out_channels,cfg.l2norm_scale)
 
         bn_=cfg.use_batchnorm        
         
@@ -126,6 +127,9 @@ class SSD(torch.nn.Module):
 
         # x_5 and x_6 is not for prediction
         x_5=self.conv5(x_4)
+
+        x_4=self.l2_norm(x_4)
+
         x_6=self.conv6(x_5)
 
         x_7=self.conv7(x_6)
