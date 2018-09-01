@@ -132,7 +132,7 @@ def test_net():
 
     img_src=np.array(img_src) # [h,w,3] 'RGB'
     # change to 'BGR'
-    img_src=img_src[:,:,::-1]
+    img_src=img_src[:,:,::-1].copy()
 
     if len(boxes) !=0:
         draw_box(img_src,boxes,color='pred',
