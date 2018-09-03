@@ -143,7 +143,10 @@ def test_net():
     show_img(img_src,-1)
 
 if __name__ == '__main__':
-    opt=sys.argv[1]
+    if len(sys.argv)==1:
+        opt='train'
+    else:
+        opt=sys.argv[1]
     if opt=='train':
         train()
     elif opt=='test':
