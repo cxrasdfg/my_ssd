@@ -61,7 +61,7 @@ def train():
     if w_path:
         model=torch.load(w_path)
         net.load_state_dict(model)
-        print("Using the model from the last check point:%s"%(w_path),end=" ")
+        print("Using the model from the last check point:%s"%(w_path) )
         epoch+=1
 
     net.train()
