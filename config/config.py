@@ -31,11 +31,12 @@ class CFG():
 
     l2norm_scale=20
 
-    rand_seed=0
+    rand_seed=1234567
 
     batch_size=32
-    num_worker=0
-
+    num_worker=8
+    
+    data_aug=False
     alpha=1.
     sigma=1.
     epochs=30

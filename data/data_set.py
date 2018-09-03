@@ -69,17 +69,19 @@ def TrainTransform(img,boxes,labels):
         boxes=torch.tensor(boxes).float()
     assert isinstance(boxes,torch.Tensor)
 
-    img = random_distort(img)
-    if torch.rand(1) < 0.5:
-        img, boxes = random_paste(img, boxes, max_ratio=4, fill=(123, 116, 103))
+    if cfg.data_aug:
+        img = random_distort(img)
+        if torch.rand(1) < 0.5:
+            img, boxes = random_paste(img, boxes, max_ratio=4, fill=(123, 116, 103))
 
-    img, boxes, labels = random_crop(img, boxes, labels)
+        img, boxes, labels = random_crop(img, boxes, labels)
     img, boxes = resize_box(
         img, boxes, size=(cfg.intput_wh, cfg.intput_wh),
         random_interpolation=True
     )
-
-    img, boxes = random_flip(img, boxes)
+    
+    if cfg.data_aug:
+        img, boxes = random_flip(img, boxes)
     img=img_normalize(img)
 
     return img, boxes, labels
