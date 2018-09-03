@@ -86,7 +86,7 @@ class SSD(torch.nn.Module):
         
         # use xavier to initialize the newly added layer...
         for k,v in torch.nn.Sequential(*[
-            self.conv6,self.conv7,
+            # self.conv6,self.conv7,
             self.conv8,self.conv9,self.conv10,self.conv11,
             self.conv_loc_layers,self.conv_cls_layers
         ]).named_parameters():
@@ -102,6 +102,20 @@ class SSD(torch.nn.Module):
         self.loss_func=SSDLoss()
 
         self.get_optimizer(lr=cfg.lr,use_adam=cfg.use_adam,weight_decay=cfg.weight_decay)
+    
+    def _convert_other(self):
+        other_w=torch.load('./models/ssd300_mAP_77.43_v2.pth')
+
+        net_state=self.state_dict()
+        keys=list(net_state.keys())
+        other_keys=list(other_w.keys())
+
+        #  totally one to one
+        for _k,_ko in zip(keys,other_keys ):
+            net_state[_k]=other_w[_ko]
+        
+
+        torch.save(net_state,'%sweights_%d_%d'%(cfg.weights_dir,10000,1000) )
 
     def get_optimizer(self,lr=1e-3,use_adam=False,weight_decay=0.0005):
         """
