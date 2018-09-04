@@ -36,6 +36,7 @@ class CFG():
     batch_size=32
     num_worker=8
     
+    freeze_top=False
     data_aug=False
     alpha=1.
     sigma=1.
