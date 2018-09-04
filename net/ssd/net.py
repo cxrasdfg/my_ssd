@@ -280,7 +280,7 @@ class SSD(torch.nn.Module):
             
             # remove neg
             cls=cls[:,1:]
-            temp=self.nms(torch.cat([loc,cls],dim=1),cfg.out_thruth_thresh) # [n',4+cls_num-1]
+            temp=self.nms(torch.cat([loc,cls],dim=1),cfg.out_nms,cfg.out_nms_filter) # [n',4+cls_num-1]
             temp_scores=temp[:,4:] # scores
             scores,idx=temp_scores.max(dim=1)
             
