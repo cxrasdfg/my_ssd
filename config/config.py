@@ -12,7 +12,7 @@ class CFG():
     use_caffe=False
 
     loc_mean=[.0,.0,.0,.0]
-    loc_std=[1.,1.,2.,2.]
+    loc_std=[.1,.1,.2,.2]
 
     use_batchnorm=False
 
@@ -36,6 +36,7 @@ class CFG():
     batch_size=32
     num_worker=4
     
+    clip=True
     freeze_top=False
     data_aug=False
     neg_ratio=3.0

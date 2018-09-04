@@ -274,6 +274,10 @@ def get_default_boxes(smin=cfg.smin,smax=cfg.smax,
         # change to `xyxy`
         xywh=ccwh2xyxy(xywh)
 
+        # clip?
+        if cfg.clip:
+            # tail '_' denotes the in-place operation...
+            xywh.clamp_(min=0,max=cfg.intput_wh)
         default_boxes.append(xywh)
     
     default_boxes=torch.cat(default_boxes,dim=0)
