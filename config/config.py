@@ -9,7 +9,7 @@ class CFG():
     weights_dir='./weights/'
 
     caffe_model="./models/vgg16_caffe_pretrain.pth"
-    use_caffe=True
+    use_caffe=False
 
     loc_mean=[.0,.0,.0,.0]
     loc_std=[1.,1.,2.,2.]
@@ -38,6 +38,7 @@ class CFG():
     
     freeze_top=False
     data_aug=False
+    neg_ratio=3.0
     alpha=1.
     sigma=1.
     epochs=3000

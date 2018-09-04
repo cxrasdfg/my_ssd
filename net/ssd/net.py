@@ -227,7 +227,7 @@ class SSD(torch.nn.Module):
         _,idx=neg_out_clses.sort(dim=1) # [b,tbnum]
         _,idx=idx.sort(dim=1) # [b,tbnum], get the rank...
         # NOTE: ratio of pos and neg is 1:3
-        num_neg=3*pos_mask.long().sum(dim=1) # [b]
+        num_neg=cfg.neg_ratio*pos_mask.long().sum(dim=1) # [b]
         rank_mask=idx<num_neg[:,None].expand_as(idx) # [b,tbnum] just select top num_neg negative sample...
         neg_out_clses=out_clses[rank_mask] # [n'',cls_num]
 
@@ -244,6 +244,7 @@ class SSD(torch.nn.Module):
         if isinstance(loss,int) and loss==0:
             return 0
         loss.backward()
+        # torch.nn.utils.clip_grad_norm(self.parameters(),10)
         self.optimizer.step()
         self.optimizer.zero_grad()
 
