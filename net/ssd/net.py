@@ -91,9 +91,12 @@ class SSD(torch.nn.Module):
             self.conv_loc_layers,self.conv_cls_layers
         ]).named_parameters():
             if 'bias' in k:
-                torch.nn.init.normal_(v.data)
+                # torch.nn.init.normal_(v.data)
+                v.data.zero_()
             else:
-                torch.nn.init.xavier_normal_(v.data)
+                # torch.nn.init.xavier_normal_(v.data)
+                torch.nn.init.xavier_uniform_(v.data)
+
             # torch.nn.init.normal_(v.data,0,0.1)
         
         # get default boxes

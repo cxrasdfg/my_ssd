@@ -34,7 +34,7 @@ class CFG():
     rand_seed=1234567
 
     batch_size=32
-    num_worker=8
+    num_worker=4
     
     freeze_top=False
     data_aug=False
