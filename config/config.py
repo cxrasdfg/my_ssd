@@ -50,7 +50,7 @@ class CFG():
     weight_decay=0.0005
     use_adam=False
 
-    out_thruth_thresh=.1
+    out_thruth_thresh=.5
     out_nms=.45
     out_nms_filter=.01
     out_box_num_per_im=200
