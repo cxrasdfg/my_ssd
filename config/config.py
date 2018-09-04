@@ -39,7 +39,9 @@ class CFG():
     data_aug=False
     alpha=1.
     sigma=1.
-    epochs=30
+    epochs=3000
+    save_per_epoch=32
+    eval_per_epoch=32
     lr=1e-3
     lrs={'40000':lr,'50000':lr/10.,'60000':lr/100.}
     weight_decay=0.0005
