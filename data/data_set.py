@@ -99,7 +99,7 @@ def TestTransform(img,boxes):
     assert isinstance(boxes,torch.Tensor)
     img, _ = resize_box(
         img, boxes, size=(cfg.intput_wh, cfg.intput_wh),
-        random_interpolation=True
+        random_interpolation=False
     )
 
     img=img_normalize(img)
