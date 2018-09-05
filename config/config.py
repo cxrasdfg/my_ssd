@@ -9,7 +9,7 @@ class CFG():
     weights_dir='./weights/'
 
     caffe_model="./models/vgg16_caffe_pretrain.pth"
-    use_caffe=False
+    use_caffe=True
 
     loc_mean=[.0,.0,.0,.0]
     loc_std=[.1,.1,.2,.2]
@@ -34,11 +34,11 @@ class CFG():
     rand_seed=1234567
 
     batch_size=32
-    num_worker=4
+    num_worker=8
     
     clip=True
     freeze_top=False
-    data_aug=False
+    data_aug=True
     neg_ratio=3.0
     alpha=1.
     sigma=1.
@@ -50,7 +50,7 @@ class CFG():
     weight_decay=0.0005
     use_adam=False
 
-    out_thruth_thresh=.5
+    out_thruth_thresh=.1
     out_nms=.45
     out_nms_filter=.01
     out_box_num_per_im=200
