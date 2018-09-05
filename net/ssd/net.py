@@ -78,7 +78,7 @@ class SSD(torch.nn.Module):
             conv_loc_layers+=[ConvBN2d(input_ch,num_loc_ch,3,1,1,bn_,False)]
             conv_cls_layers+=[torch.nn.Sequential(*[
                 ConvBN2d(input_ch,num_cls_ch,3,1,1,bn_,False),
-                torch.nn.Softmax(dim=1)
+                # torch.nn.Softmax(dim=1) #  sily b...
             ])]
 
         self.conv_loc_layers=torch.nn.Sequential(*conv_loc_layers)
@@ -193,6 +193,7 @@ class SSD(torch.nn.Module):
             cls=cls.view(b,-1,self.class_num,h,w) # [b,bnum,cls_num,h,w]
             cls=cls.permute(0,1,3,4,2).contiguous() # [b,bnum,h,w,cls_num]
             cls=cls.view(b,-1,self.class_num) # [b,bnum*h*w,cls_num]
+            cls=cls.softmax(dim=2)
             clses=torch.cat([clses,cls],dim=1) # [b,n'+bnum*h*w,cls_num]
             # tqdm.write('h:%d,w:%d' %(h,w) ,end=',\t ')
 
