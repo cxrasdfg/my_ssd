@@ -87,11 +87,12 @@ def train():
 
         if epoch % cfg.save_per_epoch ==0:
             torch.save(net.state_dict(),'%sweights_%d_%d'%(cfg.weights_dir,epoch,iteration) )
-        epoch+=1
 
         if epoch % cfg.eval_per_epoch==0:
             _map= eval_net(net=net,num=100,shuffle=True)['map']
             print("map:",_map)
+            
+        epoch+=1
 
     print(eval_net(net=net))
 

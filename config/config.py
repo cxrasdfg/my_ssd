@@ -42,7 +42,7 @@ class CFG():
     neg_ratio=3.0
     alpha=1.
     sigma=1.
-    epochs=3000
+    epochs=416
     save_per_epoch=32
     eval_per_epoch=32
     lr=1e-3
