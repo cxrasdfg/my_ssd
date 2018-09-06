@@ -13,6 +13,7 @@ ____
 | Method | Training Data | Mine | Paper |
 |:-: |:-:|:-:|:-:|
 | SSD300 | VOC 2007 trainval | 60.3% | 68.0% |
+
 There is room for improvement...
 ____
 ## DEMO
