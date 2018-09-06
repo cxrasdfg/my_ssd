@@ -14,6 +14,8 @@ ____
 |:-: |:-:|:-:|:-:|
 | SSD300 | VOC 2007 trainval | 60.3% | 68.0% |
 
+
+#### ,,,
 There is room for improvement...
 ____
 ## DEMO
@@ -37,6 +39,10 @@ instructions, or you can install from pip
 - other libs: tqdm, PIL...
 
 ### 2.Train
+#### pretrained model
+- you can download the model at https://github.com/chenyuntc/simple-faster-rcnn-pytorch , I use the pretrained model of the link given by his repository, thank the author here.
+- or you can modify `use_caffe=False` in config/config.py to use the torchvision models...
+#### command
 Train the model with:
 ```shell
 python3 main.py train
